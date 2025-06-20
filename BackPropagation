@@ -1,0 +1,70 @@
+import numpy as np
+
+# Input and Output Data
+X = np.array([[2, 9], [1, 5], [3, 6]], dtype=float)
+y = np.array([[92], [86], [89]], dtype=float)
+
+# Normalize input and output
+X = X / np.amax(X, axis=0)  # Normalize X by column max
+y = y / 100                 # Normalize y to range 0-1
+
+# Sigmoid activation function and its derivative
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def derivatives_sigmoid(x):
+    return x * (1 - x)
+
+# Network configuration
+epochs = 7000          # Number of training iterations
+lr = 0.1               # Learning rate
+input_neurons = 2      # Number of input features
+hidden_neurons = 3     # Number of neurons in hidden layer
+output_neurons = 1     # Number of neurons in output layer
+
+# Weight and bias initialization
+wh = np.random.uniform(size=(input_neurons, hidden_neurons))
+bh = np.random.uniform(size=(1, hidden_neurons))
+wout = np.random.uniform(size=(hidden_neurons, output_neurons))
+bout = np.random.uniform(size=(1, output_neurons))
+
+# Training loop
+for i in range(epochs):
+    # Forward propagation
+    hidden_input = np.dot(X, wh) + bh
+    hidden_output = sigmoid(hidden_input)
+
+    final_input = np.dot(hidden_output, wout) + bout
+    output = sigmoid(final_input)
+
+    # Backpropagation
+    error = y - output
+    d_output = error * derivatives_sigmoid(output)
+
+    hidden_error = d_output.dot(wout.T)
+    d_hidden = hidden_error * derivatives_sigmoid(hidden_output)
+
+    # Update weights and biases
+    wout += hidden_output.T.dot(d_output) * lr
+    bout += np.sum(d_output, axis=0, keepdims=True) * lr
+    wh += X.T.dot(d_hidden) * lr
+    bh += np.sum(d_hidden, axis=0, keepdims=True) * lr
+
+# Results
+print("Input:\n", X)
+print("Actual Output:\n", y)
+print("Predicted Output:\n", output)
+
+output:
+Input:
+ [[0.66666667 1.        ]
+ [0.33333333 0.55555556]
+ [1.         0.66666667]]
+Actual Output:
+ [[0.92]
+ [0.86]
+ [0.89]]
+Predicted Output:
+ [[0.8956]
+ [0.8814]
+ [0.8928]]
