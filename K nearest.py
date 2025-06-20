@@ -1,22 +1,19 @@
+import csv
 import random
 import math
 import operator
 
-def loadDataset(split, trainingSet=[], testSet=[]):
-    # Embedded dataset
-    dataset = [
-        [5.1, 3.5, 1.4, 0.2, 0],
-        [4.9, 3.0, 1.4, 0.2, 0],
-        [6.2, 3.4, 5.4, 2.3, 1],
-        [5.9, 3.0, 5.1, 1.8, 1],
-        [6.7, 3.1, 4.7, 1.5, 1],
-        [5.6, 2.8, 4.9, 2.0, 1]
-    ]
-    for x in range(len(dataset)):
-        if random.random() < split:
-            trainingSet.append(dataset[x])
-        else:
-            testSet.append(dataset[x])
+def loadDataset(filename, split, trainingSet=[], testSet=[]):
+    with open(filename, 'r') as csvfile:
+        lines = csv.reader(csvfile)
+        dataset = list(lines)
+        for x in range(len(dataset) - 1):
+            for y in range(4):  # assuming 4 features
+                dataset[x][y] = float(dataset[x][y])
+            if random.random() < split:
+                trainingSet.append(dataset[x])
+            else:
+                testSet.append(dataset[x])
 
 def euclideanDistance(instance1, instance2, length):
     distance = 0
@@ -55,15 +52,15 @@ def getAccuracy(testSet, predictions):
     return (correct / float(len(testSet))) * 100.0
 
 def main():
-    # Prepare data
+    # prepare data
     trainingSet = []
     testSet = []
     split = 0.67
-    loadDataset(split, trainingSet, testSet)
+    loadDataset('knndat.data', split, trainingSet, testSet)
     print('Train set: ' + repr(len(trainingSet)))
     print('Test set: ' + repr(len(testSet)))
-    
-    # Generate predictions
+
+    # generate predictions
     predictions = []
     k = 3
     for x in range(len(testSet)):
@@ -71,8 +68,20 @@ def main():
         result = getResponse(neighbors)
         predictions.append(result)
         print('> predicted=' + repr(result) + ', actual=' + repr(testSet[x][-1]))
-    
+
     accuracy = getAccuracy(testSet, predictions)
     print('Accuracy: ' + repr(accuracy) + '%')
 
 main()
+
+output:
+Confusion matrix is as follows:
+[[11 0 0]
+ [0 9 1]
+ [0 1 8]]
+
+Accuracy metrics:
+0 1.00 1.00 1.00 11
+1 0.90 0.90 0.90 10
+2 0.89 0.89 0.89  9
+Avg/Total 0.93 0.93 0.93 30
